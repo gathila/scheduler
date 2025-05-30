@@ -1,0 +1,41 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: schedulerAdmin
+  h2:
+    console:
+      enabled: true
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    circuitbreakers:
+      enabled: true
+resilience4j:
+  circuitbreaker:
+    instances:
+      loan-service:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+security:
+  jwt:
+    secret-key: YuizCKebQrK8OXhBTEeKOAaTQFY1xIeNtlDfygjA/Ko=
+    expiration-time: 3600000
+    refresh:
+      expiration-time: 3600000
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8085/eureka
