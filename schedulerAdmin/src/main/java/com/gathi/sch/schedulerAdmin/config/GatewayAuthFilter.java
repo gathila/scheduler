@@ -22,15 +22,8 @@ import java.io.IOException;
 public class GatewayAuthFilter extends OncePerRequestFilter {
 
 
-    private final JwtService jwtService;
-    private final UserService userService;
-    private final HandlerExceptionResolver handlerExceptionResolver;
+    public GatewayAuthFilter() {
 
-    @Autowired
-    public GatewayAuthFilter(JwtService jwtService, UserService userService, HandlerExceptionResolver handlerExceptionResolver) {
-        this.jwtService = jwtService;
-        this.userService = userService;
-        this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
     @Override
@@ -44,8 +37,7 @@ public class GatewayAuthFilter extends OncePerRequestFilter {
         }
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userId, null);
-
-        SecurityContextHolder.setContext(token);
+        SecurityContextHolder.getContext().setAuthentication(token);
         filterChain.doFilter(request, response);
     }
 }
