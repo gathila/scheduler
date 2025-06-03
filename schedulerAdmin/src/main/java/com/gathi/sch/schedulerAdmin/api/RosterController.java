@@ -24,7 +24,7 @@ public class RosterController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Roster>> getAllRosters() {
+    public ResponseEntity<Flux<Roster>> getAllRosters() {
         System.out.println("THREAD: " + Thread.currentThread().getName());
         this.rosterService.generateNumbers()
                 .filter(e -> e > 40)

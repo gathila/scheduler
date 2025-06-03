@@ -2,13 +2,17 @@ package com.gathi.sch.schedulerAdmin.svc;
 
 import com.gathi.sch.schedulerAdmin.domain.Roster;
 import com.gathi.sch.schedulerAdmin.infra.ReduxClient;
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.naming.ServiceUnavailableException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -17,7 +21,7 @@ import java.util.Random;
 @Service
 public class RosterService {
 
-
+    private static final Logger logger = LoggerFactory.getLogger(RosterService.class);
     private final ReduxClient reduxClient;
 
     @Autowired
@@ -26,17 +30,20 @@ public class RosterService {
     }
 
 
-    @CircuitBreaker(name = "SERVICE_NAME", fallbackMethod = "getDefaultRosters")
-    public List<Roster> getAllRosters() {
-        Mono<List<Roster>> listMono = reduxClient.getAllRosters()
-                .cache()
-                .collectList();
-        return listMono.block();
+    @CircuitBreaker(name = "roster-service", fallbackMethod = "serviceTempUnavailable")
+    @Bulkhead(name = "getRostersBH", type = Bulkhead.Type.SEMAPHORE, fallbackMethod = "tooManyConcurrentRequests")
+    public Flux<Roster> getAllRosters() {
+        return reduxClient.getAllRosters();
     }
 
-    public List<Roster> getDefaultRosters(Throwable t) {
-        System.out.println(t.getMessage());
-        return Collections.emptyList();
+    public Flux<Roster> serviceTempUnavailable(Throwable t) {
+        logger.error("Service temporarily unavailable", t);
+        return Flux.error(new ServiceUnavailableException("Service temporarily unavailable"));
+    }
+
+    public Flux<Roster> tooManyConcurrentRequests(Throwable t) {
+        logger.error("Too many concurrent requests", t);
+        return Flux.error(new ServiceUnavailableException("Too many concurrent requests"));
     }
 
 

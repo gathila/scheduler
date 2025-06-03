@@ -20,7 +20,7 @@ management:
 resilience4j:
   circuitbreaker:
     instances:
-      loan-service:
+      roster-service:
         registerHealthIndicator: true
         failureRateThreshold: 50
         minimumNumberOfCalls: 5
@@ -29,6 +29,11 @@ resilience4j:
         permittedNumberOfCallsInHalfOpenState: 3
         slidingWindowSize: 10
         slidingWindowType: COUNT_BASED
+  bulkhead:
+    instances:
+      getRostersBH:
+        maxConcurrentCalls: 3
+        maxWaitDuration: 500ms
 security:
   jwt:
     secret-key: YuizCKebQrK8OXhBTEeKOAaTQFY1xIeNtlDfygjA/Ko=

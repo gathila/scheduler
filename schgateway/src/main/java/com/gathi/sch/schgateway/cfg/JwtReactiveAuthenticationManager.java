@@ -2,6 +2,7 @@ package com.gathi.sch.schgateway.cfg;
 
 import com.gathi.sch.schgateway.svc.JWTService;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,7 +24,7 @@ public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationM
     public Mono<Authentication> authenticate(Authentication authentication) {
         String token = authentication.getCredentials().toString();
         if (!jwtService.isTokenValid(token)) {
-            return Mono.empty();
+            return Mono.error(new BadCredentialsException("Invalid JWT token"));
         }
 
         String username = jwtService.extractEmail(token);
